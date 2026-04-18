@@ -37,9 +37,11 @@ export const presenterScreen: GlassScreen<AppSnapshot, AppActions> = {
     const totalPages = pages.length
 
     if (action.type === 'GO_BACK') {
-      ctx?.stopPresenting()
-      ctx?.navigate('/')
-      return { ...nav, screen: 'home', highlightedIndex: 0 }
+      if (ctx) {
+        ctx.stopPresenting()
+        queueMicrotask(() => ctx.navigate('/'))
+      }
+      return nav
     }
 
     if (action.type === 'HIGHLIGHT_MOVE') {

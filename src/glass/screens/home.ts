@@ -22,10 +22,12 @@ export const homeScreen: GlassScreen<AppSnapshot, AppActions> = {
 
     if (action.type === 'SELECT_HIGHLIGHTED') {
       const id = snapshot.itemIds[nav.highlightedIndex]
-      if (id) {
-        ctx?.startPresenting(id)
-        ctx?.navigate(`/present/${id}`)
-        return { ...nav, screen: 'presenter', highlightedIndex: 0 }
+      if (id && ctx) {
+        // Start presenting first so the context state updates,
+        // then navigate on the next microtask so the snapshot
+        // has the presenting data before useGlasses flushes.
+        ctx.startPresenting(id)
+        queueMicrotask(() => ctx.navigate(`/present/${id}`))
       }
     }
 
