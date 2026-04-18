@@ -11,6 +11,7 @@ interface PresentationContextValue {
   updateSlide: (presentationId: string, slideId: string, title: string, notes: string) => void
   deleteSlide: (presentationId: string, slideId: string) => void
   reorderSlides: (presentationId: string, fromIndex: number, toIndex: number) => void
+  importPresentation: (title: string, slides: { title: string; notes: string }[]) => Presentation
   // Presenting state
   activePresentationId: string | null
   activeSlideIndex: number
@@ -182,6 +183,22 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     )
   }, [])
 
+  const importPresentation = useCallback((title: string, slides: { title: string; notes: string }[]): Presentation => {
+    const now = Date.now()
+    const pres: Presentation = {
+      id: generateId(),
+      title,
+      slides: slides.map((s) => ({ id: generateId(), title: s.title, notes: s.notes })),
+      createdAt: now,
+      updatedAt: now,
+    }
+    if (pres.slides.length === 0) {
+      pres.slides = [{ id: generateId(), title: 'Slide 1', notes: '' }]
+    }
+    setPresentations((prev) => [pres, ...prev])
+    return pres
+  }, [])
+
   const startPresenting = useCallback((presentationId: string) => {
     setActivePresentationId(presentationId)
     setActiveSlideIndex(0)
@@ -225,6 +242,7 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
         updateSlide,
         deleteSlide,
         reorderSlides,
+        importPresentation,
         activePresentationId,
         activeSlideIndex,
         startPresenting,

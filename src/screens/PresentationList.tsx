@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { ListItem, Badge, EmptyState, Button, Input, Card, ScreenHeader, useDrawerHeader } from 'even-toolkit/web'
 import { IcPlus } from 'even-toolkit/web/icons/svg-icons'
 import { usePresentation } from '../contexts/PresentationContext'
+import { parsePptx } from '../lib/pptx-parser'
 
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp
@@ -18,9 +19,12 @@ function formatRelativeTime(timestamp: number): string {
 
 export function PresentationList() {
   const navigate = useNavigate()
-  const { presentations, addPresentation, deletePresentation } = usePresentation()
+  const { presentations, addPresentation, deletePresentation, importPresentation } = usePresentation()
   const [showNew, setShowNew] = useState(false)
   const [newTitle, setNewTitle] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useDrawerHeader({
     right: (
@@ -38,12 +42,73 @@ export function PresentationList() {
     navigate(`/presentation/${pres.id}`)
   }
 
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Reset input so the same file can be re-selected
+    e.target.value = ''
+
+    if (!file.name.toLowerCase().endsWith('.pptx')) {
+      setImportError('Please select a .pptx file')
+      return
+    }
+
+    setImporting(true)
+    setImportError(null)
+
+    try {
+      const buffer = await file.arrayBuffer()
+      const parsed = await parsePptx(buffer)
+
+      const title = parsed.title || file.name.replace(/\.pptx$/i, '')
+      const pres = importPresentation(title, parsed.slides)
+
+      setImporting(false)
+      navigate(`/presentation/${pres.id}`)
+    } catch (err) {
+      setImporting(false)
+      setImportError(
+        err instanceof Error ? err.message : 'Failed to parse PPTX file',
+      )
+    }
+  }
+
   return (
     <main className="px-3 pt-4 pb-8 space-y-3">
       <ScreenHeader
         title="Presentations"
         subtitle={`${presentations.length} deck${presentations.length !== 1 ? 's' : ''}`}
       />
+
+      {/* Import / Create actions */}
+      <div className="flex gap-2">
+        <Button
+          variant="ghost"
+          className="flex-1"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={importing}
+        >
+          {importing ? 'Importing...' : '↑ Import PPTX'}
+        </Button>
+        <Button className="flex-1" onClick={() => setShowNew(true)}>
+          + New Deck
+        </Button>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        className="hidden"
+        onChange={handleFileSelect}
+      />
+
+      {importError && (
+        <Card className="p-3 border border-negative/30">
+          <p className="text-[13px] tracking-[-0.13px] text-negative">{importError}</p>
+        </Card>
+      )}
 
       {showNew && (
         <Card className="p-4 space-y-3">
@@ -68,8 +133,8 @@ export function PresentationList() {
       {presentations.length === 0 ? (
         <EmptyState
           title="No presentations yet"
-          description="Create a presentation to get started with your slide notes."
-          action={{ label: 'New Presentation', onClick: () => setShowNew(true) }}
+          description="Import a PPTX file or create a deck manually."
+          action={{ label: 'Import PPTX', onClick: () => fileInputRef.current?.click() }}
         />
       ) : (
         <div className="rounded-[6px] overflow-hidden divide-y divide-border">
