@@ -1,20 +1,20 @@
 import { useState } from 'react'
-import { SettingsGroup, Toggle, ListItem, Card, Button, Divider, useDrawerHeader } from 'even-toolkit/web'
-import { useNotes } from '../contexts/NotesContext'
+import { SettingsGroup, ListItem, Card, Button, Divider, useDrawerHeader } from 'even-toolkit/web'
+import { usePresentation } from '../contexts/PresentationContext'
 
 export function Settings() {
-  const { notes, compactView, setCompactView } = useNotes()
+  const { presentations } = usePresentation()
   const [confirmClear, setConfirmClear] = useState(false)
 
   useDrawerHeader({ title: 'Settings', backTo: '/' })
 
   function handleExport() {
-    const data = JSON.stringify(notes, null, 2)
+    const data = JSON.stringify(presentations, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `notes-export-${Date.now()}.json`
+    a.download = `stagecue-export-${Date.now()}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -24,37 +24,25 @@ export function Settings() {
       setConfirmClear(true)
       return
     }
-    localStorage.removeItem('StageCue-notes')
+    localStorage.removeItem('StageCue-presentations')
     window.location.reload()
   }
 
+  const totalSlides = presentations.reduce((sum, p) => sum + p.slides.length, 0)
+
   return (
     <main className="px-3 pt-4 pb-8 space-y-6">
-      <SettingsGroup label="Display">
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[15px] tracking-[-0.15px] text-text">Compact View</p>
-              <p className="text-[11px] tracking-[-0.11px] text-text-dim mt-0.5">
-                Hide note previews in the list
-              </p>
-            </div>
-            <Toggle checked={compactView} onChange={setCompactView} />
-          </div>
-        </Card>
-      </SettingsGroup>
-
       <SettingsGroup label="Data">
         <Card className="divide-y divide-border">
           <ListItem
-            title="Export Notes"
-            subtitle={`Export all ${notes.length} notes as JSON`}
+            title="Export Presentations"
+            subtitle={`Export ${presentations.length} deck${presentations.length !== 1 ? 's' : ''} (${totalSlides} slides) as JSON`}
             onPress={handleExport}
           />
           <div>
             <ListItem
-              title={confirmClear ? 'Tap again to confirm' : 'Clear All Notes'}
-              subtitle="Permanently delete all notes"
+              title={confirmClear ? 'Tap again to confirm' : 'Clear All Data'}
+              subtitle="Permanently delete all presentations"
               onPress={handleClearAll}
             />
             {confirmClear && (
@@ -79,7 +67,7 @@ export function Settings() {
           <p className="text-[13px] tracking-[-0.13px] text-text-dim">Version 1.0.0</p>
           <Divider className="my-2" />
           <p className="text-[11px] tracking-[-0.11px] text-text-dim">
-            A notes app for Even Realities G2 smart glasses. All data is stored locally in your browser.
+            Presenter slide notes for Even Realities G2 smart glasses. See your speaker notes on the glasses while presenting. All data is stored locally in your browser.
           </p>
         </Card>
       </SettingsGroup>

@@ -2,7 +2,7 @@ import { DrawerShell } from 'even-toolkit/web'
 import type { SideDrawerItem } from 'even-toolkit/web'
 
 const MENU_ITEMS: SideDrawerItem[] = [
-  { id: '/', label: 'Notes', section: 'Notes' },
+  { id: '/', label: 'Presentations', section: 'Decks' },
 ]
 
 const BOTTOM_ITEMS: SideDrawerItem[] = [
@@ -11,11 +11,11 @@ const BOTTOM_ITEMS: SideDrawerItem[] = [
 
 function getPageTitle(pathname: string): string {
   if (pathname === '/') return 'StageCue'
-  if (pathname === '/new') return 'New Note'
-  if (pathname.includes('/edit')) return 'Edit Note'
-  if (pathname.startsWith('/note/')) return 'Note'
+  if (pathname.startsWith('/present/')) return 'Presenting'
+  if (pathname.includes('/slide/')) return 'Edit Slide'
+  if (pathname.startsWith('/presentation/')) return 'Deck'
   if (pathname === '/settings') return 'Settings'
-  return 'Notes'
+  return 'StageCue'
 }
 
 function deriveActiveId(pathname: string): string {
