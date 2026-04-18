@@ -9,6 +9,8 @@ export interface AppSnapshot {
   totalNotePages: number
   // Home mode (list of presentations)
   items: string[]
+  /** Parallel array of presentation IDs matching items[] */
+  itemIds: string[]
   flashPhase: boolean
 }
 
@@ -17,4 +19,5 @@ export interface AppActions {
   nextSlide: () => void
   prevSlide: () => void
   setNotePage: (page: number) => void
+  startPresenting: (id: string) => void
 }

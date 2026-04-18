@@ -15,10 +15,20 @@ export const homeScreen: GlassScreen<AppSnapshot, AppActions> = {
     }
   },
 
-  action(action, nav, snapshot) {
+  action(action, nav, snapshot, ctx) {
     if (action.type === 'HIGHLIGHT_MOVE') {
       return { ...nav, highlightedIndex: moveHighlight(nav.highlightedIndex, action.direction, snapshot.items.length - 1) }
     }
+
+    if (action.type === 'SELECT_HIGHLIGHTED') {
+      const id = snapshot.itemIds[nav.highlightedIndex]
+      if (id) {
+        ctx?.startPresenting(id)
+        ctx?.navigate(`/present/${id}`)
+        return { ...nav, screen: 'presenter', highlightedIndex: 0 }
+      }
+    }
+
     return nav
   },
 }
