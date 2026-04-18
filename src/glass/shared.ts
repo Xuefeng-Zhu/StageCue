@@ -20,4 +20,5 @@ export interface AppActions {
   prevSlide: () => void
   setNotePage: (page: number) => void
   startPresenting: (id: string) => void
+  stopPresenting: () => void
 }

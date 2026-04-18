@@ -36,6 +36,12 @@ export const presenterScreen: GlassScreen<AppSnapshot, AppActions> = {
     const currentPage = snapshot.notePage
     const totalPages = pages.length
 
+    if (action.type === 'GO_BACK') {
+      ctx?.stopPresenting()
+      ctx?.navigate('/')
+      return { ...nav, screen: 'home', highlightedIndex: 0 }
+    }
+
     if (action.type === 'HIGHLIGHT_MOVE') {
       if (action.direction === 'down') {
         // Scroll down: next page of notes, or next slide

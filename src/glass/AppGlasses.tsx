@@ -18,7 +18,7 @@ const homeTiles = getHomeTiles(appSplash)
 export function AppGlasses() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { presentations, activePresentation, activeSlide, activeSlideIndex, nextSlide, prevSlide, startPresenting } = usePresentation()
+  const { presentations, activePresentation, activeSlide, activeSlideIndex, nextSlide, prevSlide, startPresenting, stopPresenting } = usePresentation()
   const [notePage, setNotePage] = useState(0)
 
   const currentScreen = deriveScreen(location.pathname)
@@ -53,8 +53,8 @@ export function AppGlasses() {
 
   const getSnapshot = useCallback(() => snapshotRef.current!, [snapshotRef])
 
-  const ctxRef = useRef<AppActions>({ navigate, nextSlide, prevSlide, setNotePage, startPresenting })
-  ctxRef.current = { navigate, nextSlide, prevSlide, setNotePage, startPresenting }
+  const ctxRef = useRef<AppActions>({ navigate, nextSlide, prevSlide, setNotePage, startPresenting, stopPresenting })
+  ctxRef.current = { navigate, nextSlide, prevSlide, setNotePage, startPresenting, stopPresenting }
 
   const handleGlassAction = useCallback(
     (action: Parameters<typeof onGlassAction>[0], nav: Parameters<typeof onGlassAction>[1], snap: AppSnapshot) =>
